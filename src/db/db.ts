@@ -21,11 +21,12 @@ export interface BiathlonEvent {
 }
 
 export interface SplitTimes {
-    lap1?: number;
-    shoot1?: number;
-    lap2?: number;
-    shoot2?: number;
-    finish?: number;
+    start?: number; // Start Time
+    lap1?: number; // Range 1 Entry
+    shoot1?: number; // Range 1 Exit
+    lap2?: number; // Range 2 Entry
+    shoot2?: number; // Range 2 Exit
+    finish?: number; // Finish Line
 }
 
 export interface ShootingScore {
