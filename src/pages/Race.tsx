@@ -48,6 +48,11 @@ export const Race = () => {
         switch (currentPhase) {
             case 'start':
                 splits.start = currentTime;
+                // If it's a duel, also start the opponent's timer
+                if (opponentRace && !opponentRace.splits.start) {
+                    const opponentSplits = { ...opponentRace.splits, start: currentTime };
+                    await db.races.update(opponentRace.id!, { splits: opponentSplits });
+                }
                 break;
             case 'lap1':
                 splits.lap1 = currentTime; // Fin Tour 1 / Entrée Tir 1

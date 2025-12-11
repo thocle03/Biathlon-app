@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { Users, Trophy, Timer, Zap, Target, Flag } from 'lucide-react';
+import { Users, Trophy, Timer, Zap, Target } from 'lucide-react';
 
 export const Home = () => {
     const navigate = useNavigate();
