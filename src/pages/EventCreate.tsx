@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, Save, Shuffle, Users } from 'lucide-react';
 import { db, type Competitor, type RaceMode } from '../db/db';
@@ -12,12 +12,14 @@ interface Duel {
 
 export const EventCreate = () => {
     const navigate = useNavigate();
+    const { type: urlType } = useParams<{ type: RaceMode }>();
+    const type: RaceMode = urlType || 'sprint'; // Default to sprint if no type in URL
+
     const competitors = useLiveQuery(() => db.competitors.toArray());
 
     const [name, setName] = useState('');
     const [date, setDate] = useState('2025-08-14');
     const [level, setLevel] = useState(1);
-    const [type, setType] = useState<RaceMode>('sprint');
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [duels, setDuels] = useState<Duel[]>([]);
     const [step, setStep] = useState<1 | 2>(1); // 1: Select, 2: Pair
@@ -157,16 +159,12 @@ export const EventCreate = () => {
 
                         <div>
                             <label className="block text-sm font-medium text-slate-400 mb-1">Type de course</label>
-                            <select
-                                value={type}
-                                onChange={e => setType(e.target.value as any)}
-                                className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg"
-                            >
-                                <option value="sprint">Sprint (Duel)</option>
-                                <option value="individual">Individuel (Duel)</option>
-                                <option value="pursuit">Poursuite (Liste)</option>
-                                <option value="relay">Relais (Liste)</option>
-                            </select>
+                            <div className="w-full px-4 py-2 bg-slate-800/50 border border-white/10 rounded-lg text-slate-300 capitalize">
+                                {type === 'sprint' && 'Sprint (Duel)'}
+                                {type === 'individual' && 'Individuel (Duel)'}
+                                {type === 'pursuit' && 'Poursuite (Liste)'}
+                                {type === 'relay' && 'Relais (Liste)'}
+                            </div>
                         </div>
 
                         <div>

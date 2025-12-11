@@ -25,7 +25,7 @@ export const EventsByType = ({ type, title, description }: EventsByTypeProps) =>
                     <p className="text-slate-400 mt-2">{description}</p>
                 </div>
                 <button
-                    onClick={() => navigate('/events/new')}
+                    onClick={() => navigate(`/events/new/${type}`)}
                     className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all hover:scale-105"
                 >
                     <Plus className="w-5 h-5" />
@@ -39,7 +39,7 @@ export const EventsByType = ({ type, title, description }: EventsByTypeProps) =>
                     <h3 className="text-xl font-semibold text-slate-400 mb-2">Aucun événement {title.toLowerCase()}</h3>
                     <p className="text-slate-500 mb-6">Créez votre premier événement pour commencer</p>
                     <button
-                        onClick={() => navigate('/events/new')}
+                        onClick={() => navigate(`/events/new/${type}`)}
                         className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-all"
                     >
                         Créer un événement

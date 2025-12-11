@@ -46,7 +46,7 @@ function App() {
           <Route path="events/pursuit" element={<PursuitEvents />} />
           <Route path="events/relay" element={<RelayEvents />} />
           <Route path="events/individual" element={<IndividualEvents />} />
-          <Route path="events/new" element={<EventCreate />} />
+          <Route path="events/new/:type" element={<EventCreate />} />
           <Route path="events/:id" element={<EventDashboard />} />
           <Route path="race/:id" element={<Race />} />
           <Route path="race-mass/:id" element={<PursuitRace />} />
