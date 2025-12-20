@@ -23,6 +23,7 @@ export interface BiathlonEvent {
     // Relay specific
     team1?: number[]; // Array of competitor IDs in order
     team2?: number[]; // Array of competitor IDs in order
+    location?: string; // e.g., 'Feucherolles', 'Meribel', etc.
 }
 
 export interface SplitTimes {
@@ -87,6 +88,18 @@ export class BiathlonDB extends Dexie {
             competitors: '++id, name',
             events: '++id, date, status, type',
             races: '++id, eventId, competitorId, rank, teamId'
+        });
+        // Version 4: Add location to events
+        this.version(4).stores({
+            competitors: '++id, name',
+            events: '++id, date, status, type, location',
+            races: '++id, eventId, competitorId, rank, teamId'
+        }).upgrade(async tx => {
+            await tx.table('events').toCollection().modify(event => {
+                if (!event.location) {
+                    event.location = 'Feucherolles';
+                }
+            });
         });
     }
 }

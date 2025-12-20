@@ -9,9 +9,12 @@ interface EventsByTypeProps {
     description: string;
 }
 
+import { useLocation } from '../context/LocationContext';
+
 export const EventsByType = ({ type, title, description }: EventsByTypeProps) => {
     const navigate = useNavigate();
-    const allEvents = useLiveQuery(() => db.events.reverse().toArray(), []);
+    const { location } = useLocation();
+    const allEvents = useLiveQuery(() => db.events.where('location').equals(location).reverse().toArray(), [location]);
     const events = allEvents?.filter(e => e.type === type || (!e.type && type === 'sprint'));
     const allRaces = useLiveQuery(() => db.races.toArray());
 

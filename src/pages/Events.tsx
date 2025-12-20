@@ -3,9 +3,12 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, Calendar, Trophy, ChevronRight } from 'lucide-react';
 import { db } from '../db/db';
 
+import { useLocation } from '../context/LocationContext';
+
 export const Events = () => {
     const navigate = useNavigate();
-    const events = useLiveQuery(() => db.events.reverse().toArray());
+    const { location } = useLocation();
+    const events = useLiveQuery(() => db.events.where('location').equals(location).reverse().toArray(), [location]);
 
     return (
         <div className="space-y-6">

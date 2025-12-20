@@ -4,6 +4,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type RaceMode } from '../db/db';
 import { Trophy, Star, Timer, Target } from 'lucide-react';
 
+import { useLocation } from '../context/LocationContext';
+
 interface StatsByTypeProps {
     type: RaceMode;
     title: string;
@@ -11,8 +13,9 @@ interface StatsByTypeProps {
 
 export const StatsByType = ({ type, title }: StatsByTypeProps) => {
     const navigate = useNavigate();
+    const { location } = useLocation();
     const competitors = useLiveQuery(() => db.competitors.toArray());
-    const events = useLiveQuery(() => db.events.toArray());
+    const events = useLiveQuery(() => db.events.where('location').equals(location).toArray(), [location]);
     const allRaces = useLiveQuery(() => db.races.toArray());
     const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
 

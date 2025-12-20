@@ -1,7 +1,8 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Users, Timer, Trophy, Settings } from 'lucide-react';
+import { NavLink, Outlet, Link } from 'react-router-dom';
+import { LayoutDashboard, Users, Timer, Trophy, Settings, MapPin } from 'lucide-react';
 import clsx from 'clsx';
+import { useLocation } from '../context/LocationContext';
 
 const NavItem = ({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) => (
     <NavLink
@@ -21,6 +22,8 @@ const NavItem = ({ to, icon: Icon, label }: { to: string; icon: React.ElementTyp
 );
 
 export const Layout = () => {
+    const { location } = useLocation();
+
     return (
         <div className="flex h-screen bg-slate-900 text-slate-100 overflow-hidden bg-[url('/biathlon_bg.png')] bg-cover bg-center">
             {/* Overlay for readability */}
@@ -28,14 +31,21 @@ export const Layout = () => {
 
             {/* Sidebar */}
             <aside className="relative z-10 w-64 h-full border-r border-white/10 bg-slate-900/40 backdrop-blur-md flex flex-col p-6">
-                <div className="flex items-center gap-3 mb-10 px-2">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <Trophy className="w-6 h-6 text-white" />
+                <Link to="/select-location" className="block mb-10 px-2 group">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+                            <Trophy className="w-6 h-6 text-white" />
+                        </div>
+                        <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 group-hover:to-white transition-all">
+                            BiathlonPro
+                        </h1>
                     </div>
-                    <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-                        BiathlonPro
-                    </h1>
-                </div>
+
+                    <div className="flex items-center gap-2 text-xs font-medium text-slate-400 bg-white/5 py-1 px-3 rounded-full w-fit border border-white/5 group-hover:border-white/20 transition-colors">
+                        <MapPin className="w-3 h-3" />
+                        {location}
+                    </div>
+                </Link>
 
                 <nav className="flex-1 space-y-2">
                     <NavItem to="/" icon={LayoutDashboard} label="Tableau de bord" />

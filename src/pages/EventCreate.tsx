@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, Save, Shuffle, Users } from 'lucide-react';
+import { ArrowLeft, Save, Shuffle, Users, MapPin } from 'lucide-react';
 import { db, type Competitor, type RaceMode } from '../db/db';
 import { RelayTeamSetup } from '../components/RelayTeamSetup';
+import { useLocation } from '../context/LocationContext';
 import toast from 'react-hot-toast';
 
 interface Duel {
@@ -15,6 +16,7 @@ export const EventCreate = () => {
     const navigate = useNavigate();
     const { type: urlType } = useParams<{ type: RaceMode }>();
     const type: RaceMode = urlType || 'sprint'; // Default to sprint if no type in URL
+    const { location } = useLocation();
 
     const competitors = useLiveQuery(() => db.competitors.toArray());
 
@@ -84,6 +86,7 @@ export const EventCreate = () => {
                 level,
                 status: 'active',
                 type: type,
+                location,
                 ...(type === 'relay' && { team1, team2 })
             });
 
@@ -172,11 +175,17 @@ export const EventCreate = () => {
                 <button onClick={() => navigate(`/events/${type}`)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h1 className="text-3xl font-bold">Nouvel Événement</h1>
+                <div className="flex-1 flex items-center justify-between">
+                    <h1 className="text-3xl font-bold">Nouvel Événement</h1>
+                    <div className="bg-slate-800 px-3 py-1 rounded-full text-xs font-medium text-slate-400 border border-white/5 flex items-center gap-2">
+                        <MapPin className="w-3 h-3" />
+                        {location}
+                    </div>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Col: Settings */}
+            <div className={`grid grid-cols-1 ${type === 'relay' ? '' : 'lg:grid-cols-2'} gap-8`}>
+                {/* Settings Panel */}
                 <div className="space-y-6">
                     <div className="glass-panel p-6 rounded-2xl space-y-4">
                         <h2 className="text-xl font-semibold mb-4">Configuration</h2>
@@ -229,52 +238,77 @@ export const EventCreate = () => {
                     </div>
                 </div>
 
-                {/* Right Col: Competitor Selection */}
-                <div className="space-y-6">
-                    <div className="glass-panel p-6 rounded-2xl">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-semibold">Concurrents</h2>
-                            <span className="text-sm text-slate-400">{selectedIds.length} sélectionnés</span>
-                        </div>
+                {/* Competitor Selection - Hide for Relay */}
+                {type !== 'relay' && (
+                    <div className="space-y-6">
+                        <div className="glass-panel p-6 rounded-2xl">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold">Concurrents</h2>
+                                <span className="text-sm text-slate-400">{selectedIds.length} sélectionnés</span>
+                            </div>
 
-                        <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2">
-                            {competitors?.map(c => (
-                                <div
-                                    key={c.id}
-                                    onClick={() => toggleSelection(c.id!)}
-                                    className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${selectedIds.includes(c.id!)
-                                        ? 'bg-blue-600/20 border border-blue-500/50'
-                                        : 'bg-slate-800/50 border border-transparent hover:bg-slate-800'
-                                        }`}
-                                >
-                                    <span className="font-medium">{c.name}</span>
-                                    {selectedIds.includes(c.id!) && <div className="w-2 h-2 bg-blue-500 rounded-full" />}
-                                </div>
-                            ))}
-                        </div>
+                            <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2">
+                                {competitors?.map(c => (
+                                    <div
+                                        key={c.id}
+                                        onClick={() => toggleSelection(c.id!)}
+                                        className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${selectedIds.includes(c.id!)
+                                            ? 'bg-blue-600/20 border border-blue-500/50'
+                                            : 'bg-slate-800/50 border border-transparent hover:bg-slate-800'
+                                            }`}
+                                    >
+                                        <span className="font-medium">{c.name}</span>
+                                        {selectedIds.includes(c.id!) && <div className="w-2 h-2 bg-blue-500 rounded-full" />}
+                                    </div>
+                                ))}
+                            </div>
 
-                        <button
-                            onClick={generateDuels}
-                            disabled={selectedIds.length < 1 || !name}
-                            className="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all"
-                        >
-                            <Shuffle className="w-4 h-4" />
-                            {type === 'pursuit' || type === 'relay' ? 'Générer la liste' : 'Générer les duels'}
-                        </button>
+                            <button
+                                onClick={generateDuels}
+                                disabled={selectedIds.length < 1 || !name}
+                                className="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all"
+                            >
+                                <Shuffle className="w-4 h-4" />
+                                {type === 'pursuit' ? 'Générer la liste' : 'Générer les duels'}
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
-            {step === 2 && (
+            {/* Relay Team Setup */}
+            {type === 'relay' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4">
+                    <RelayTeamSetup
+                        competitors={competitors || []}
+                        team1={team1}
+                        team2={team2}
+                        onTeam1Change={setTeam1}
+                        onTeam2Change={setTeam2}
+                    />
+
+                    <button
+                        onClick={saveEvent}
+                        disabled={!name || team1.length === 0 || team1.length !== team2.length}
+                        className="w-full mt-8 py-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold text-lg shadow-lg shadow-emerald-900/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+                    >
+                        <Save className="w-5 h-5" />
+                        Créer le Relais
+                    </button>
+                </div>
+            )}
+
+            {/* Duel Confirmation (Non-Relay) */}
+            {type !== 'relay' && step === 2 && (
                 <div className="glass-panel p-6 rounded-2xl animate-in fade-in slide-in-from-bottom-4">
                     <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                         <Users className="w-5 h-5 text-blue-400" />
-                        {type === 'pursuit' || type === 'relay' ? 'Liste de départ' : 'Duels Générés'}
+                        {type === 'pursuit' ? 'Liste de départ' : 'Duels Générés'}
                     </h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {duels.map((duel, idx) => (
-                            <div key={idx} className="bg-slate-800/50 border border-white/5 p-4 rounded-xl flex items-center justify-between">
+                            <div key={idx} className="bg-slate-800/50 border border-white/5 p-4 rounded-xl flex items-center justify-center gap-4">
                                 <span className="font-medium text-white">{duel.p1.name}</span>
                                 {duel.p2 ? (
                                     <>

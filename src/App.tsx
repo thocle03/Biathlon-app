@@ -23,45 +23,51 @@ import { RelayStats } from './pages/RelayStats';
 import { IndividualStats } from './pages/IndividualStats';
 import { Settings } from './pages/Settings';
 
+import { LocationProvider } from './context/LocationContext';
+import { SelectLocation } from './pages/SelectLocation';
+
 function App() {
   return (
     <BrowserRouter>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: '#1e293b',
-            color: '#fff',
-            borderRadius: '12px',
-            border: '1px solid rgba(255,255,255,0.1)',
-          },
-        }}
-      />
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="competitors" element={<Competitors />} />
-          <Route path="competitors/:id" element={<CompetitorProfile />} />
-          <Route path="competitors/:id/analysis/:raceId" element={<CompetitorRaceAnalysis />} />
-          <Route path="events" element={<Events />} />
-          <Route path="events/sprint" element={<SprintEvents />} />
-          <Route path="events/pursuit" element={<PursuitEvents />} />
-          <Route path="events/relay" element={<RelayEvents />} />
-          <Route path="events/individual" element={<IndividualEvents />} />
-          <Route path="events/new/:type" element={<EventCreate />} />
-          <Route path="events/:id" element={<EventDashboard />} />
-          <Route path="race/:id" element={<Race />} />
-          <Route path="race-mass/:id" element={<PursuitRace />} />
-          <Route path="race/manual/:id" element={<ManualRaceEntry />} />
-          <Route path="stats" element={<Stats />} />
-          <Route path="stats/general" element={<GeneralStats />} />
-          <Route path="stats/sprint" element={<SprintStats />} />
-          <Route path="stats/pursuit" element={<PursuitStats />} />
-          <Route path="stats/relay" element={<RelayStats />} />
-          <Route path="stats/individual" element={<IndividualStats />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
+      <LocationProvider>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: '#1e293b',
+              color: '#fff',
+              borderRadius: '12px',
+              border: '1px solid rgba(255,255,255,0.1)',
+            },
+          }}
+        />
+        <Routes>
+          <Route path="/select-location" element={<SelectLocation />} />
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="competitors" element={<Competitors />} />
+            <Route path="competitors/:id" element={<CompetitorProfile />} />
+            <Route path="competitors/:id/analysis/:raceId" element={<CompetitorRaceAnalysis />} />
+            <Route path="events" element={<Events />} />
+            <Route path="events/sprint" element={<SprintEvents />} />
+            <Route path="events/pursuit" element={<PursuitEvents />} />
+            <Route path="events/relay" element={<RelayEvents />} />
+            <Route path="events/individual" element={<IndividualEvents />} />
+            <Route path="events/new/:type" element={<EventCreate />} />
+            <Route path="events/:id" element={<EventDashboard />} />
+            <Route path="race/:id" element={<Race />} />
+            <Route path="race-mass/:id" element={<PursuitRace />} />
+            <Route path="race/manual/:id" element={<ManualRaceEntry />} />
+            <Route path="stats" element={<Stats />} />
+            <Route path="stats/general" element={<GeneralStats />} />
+            <Route path="stats/sprint" element={<SprintStats />} />
+            <Route path="stats/pursuit" element={<PursuitStats />} />
+            <Route path="stats/relay" element={<RelayStats />} />
+            <Route path="stats/individual" element={<IndividualStats />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </LocationProvider>
     </BrowserRouter>
   );
 }

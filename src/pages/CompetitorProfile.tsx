@@ -4,17 +4,20 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { ArrowLeft, Trophy, Target, Timer, Medal, Snowflake } from 'lucide-react';
 
+import { useLocation } from '../context/LocationContext';
+
 export const CompetitorProfile = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const compId = Number(id);
+    const { location } = useLocation();
 
     const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
     const [activeTab, setActiveTab] = useState<'profile' | 'ski'>('profile');
 
     const competitor = useLiveQuery(() => db.competitors.get(compId), [compId]);
     const allRacesInDb = useLiveQuery(() => db.races.toArray());
-    const allEvents = useLiveQuery(() => db.events.toArray());
+    const allEvents = useLiveQuery(() => db.events.where('location').equals(location).toArray(), [location]);
 
     if (!competitor || !allRacesInDb || !allEvents) return null;
 

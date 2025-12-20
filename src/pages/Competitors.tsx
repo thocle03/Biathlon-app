@@ -6,12 +6,17 @@ import { db } from '../db/db';
 import { Modal } from '../components/ui/Modal';
 import { CompetitorForm } from '../components/competitors/CompetitorForm';
 
+import { useLocation } from '../context/LocationContext';
+
 export const Competitors = () => {
     const navigate = useNavigate();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const { location } = useLocation();
 
     const allRaces = useLiveQuery(() => db.races.toArray());
+    const validEvents = useLiveQuery(() => db.events.where('location').equals(location).toArray(), [location]);
+    const validEventIds = validEvents?.map(e => e.id) || [];
 
     const competitorsData = useLiveQuery(
         () => db.competitors
@@ -23,7 +28,8 @@ export const Competitors = () => {
 
     // Compute dynamic stats
     const competitors = competitorsData?.map(c => {
-        const cRaces = allRaces?.filter(r => r.competitorId === c.id && r.totalTime) || [];
+        // Filter races only for current location events
+        const cRaces = allRaces?.filter(r => r.competitorId === c.id && r.totalTime && validEventIds.includes(r.eventId)) || [];
         const totalRaces = cRaces.length;
 
         // Calculate podiums and best position requires knowing the rank within each event

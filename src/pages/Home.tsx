@@ -3,10 +3,13 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { Users, Trophy, Timer, Zap, Target } from 'lucide-react';
 
+import { useLocation } from '../context/LocationContext';
+
 export const Home = () => {
     const navigate = useNavigate();
+    const { location } = useLocation();
 
-    const events = useLiveQuery(() => db.events.toArray());
+    const events = useLiveQuery(() => db.events.where('location').equals(location).toArray(), [location]);
     const competitors = useLiveQuery(() => db.competitors.toArray());
 
     const sprintCount = events?.filter(e => !e.type || e.type === 'sprint').length || 0;
