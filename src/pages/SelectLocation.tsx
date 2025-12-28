@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Mountain, Home, Globe } from 'lucide-react';
+import { MapPin, Mountain, Home, Globe, Trophy } from 'lucide-react';
 import { useLocation, type LocationType } from '../context/LocationContext';
 import clsx from 'clsx';
 
@@ -35,7 +34,7 @@ export const SelectLocation = () => {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                     {locations.map((loc) => {
                         const Icon = loc.icon;
                         const isSelected = currentLocation === loc.id;
@@ -73,6 +72,18 @@ export const SelectLocation = () => {
                             </button>
                         );
                     })}
+                </div>
+
+                <div className="flex justify-center">
+                    <button
+                        onClick={() => navigate('/global-rankings')}
+                        className="group flex items-center gap-3 px-8 py-4 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/50 rounded-2xl transition-all hover:scale-105"
+                    >
+                        <Trophy className="w-6 h-6 text-yellow-500 group-hover:animate-bounce" />
+                        <span className="text-lg font-bold text-yellow-500">
+                            Voir le Super Classement Général
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>

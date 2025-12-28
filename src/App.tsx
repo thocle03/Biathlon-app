@@ -26,6 +26,7 @@ import { Settings } from './pages/Settings';
 
 import { LocationProvider } from './context/LocationContext';
 import { SelectLocation } from './pages/SelectLocation';
+import { GlobalRankings } from './pages/GlobalRankings';
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
         />
         <Routes>
           <Route path="/select-location" element={<SelectLocation />} />
+          <Route path="/global-rankings" element={<GlobalRankings />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="competitors" element={<Competitors />} />
