@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
@@ -14,6 +14,7 @@ import { EventCreate } from './pages/EventCreate';
 import { EventDashboard } from './pages/EventDashboard';
 import { Race } from './pages/Race';
 import { PursuitRace } from './pages/PursuitRace';
+import { RelayRace } from './pages/RelayRace';
 import { ManualRaceEntry } from './pages/ManualRaceEntry';
 import { Stats } from './pages/Stats';
 import { GeneralStats } from './pages/GeneralStats';
@@ -28,7 +29,7 @@ import { SelectLocation } from './pages/SelectLocation';
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <LocationProvider>
         <Toaster
           position="top-right"
@@ -57,6 +58,7 @@ function App() {
             <Route path="events/:id" element={<EventDashboard />} />
             <Route path="race/:id" element={<Race />} />
             <Route path="race-mass/:id" element={<PursuitRace />} />
+            <Route path="race-relay/:id" element={<RelayRace />} />
             <Route path="race/manual/:id" element={<ManualRaceEntry />} />
             <Route path="stats" element={<Stats />} />
             <Route path="stats/general" element={<GeneralStats />} />
@@ -68,7 +70,7 @@ function App() {
           </Route>
         </Routes>
       </LocationProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

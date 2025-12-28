@@ -227,12 +227,22 @@ export const EventCreate = () => {
                                 onChange={e => setLevel(Number(e.target.value))}
                                 className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg"
                             >
-                                <option value={0}>Niveau 0 (5 pts - Top 3)</option>
-                                <option value={1}>Niveau 1 (10 pts - Top 5)</option>
-                                <option value={2}>Niveau 2 (20 pts - Top 5)</option>
-                                <option value={3}>Niveau 3 (50 pts - Top 5)</option>
-                                <option value={4}>Niveau 4 (100 pts - Top 8)</option>
-                                <option value={5}>Niveau 5 (200 pts - Top 10)</option>
+                                {type === 'relay' ? (
+                                    <>
+                                        <option value={10}>Niveau Or (10 pts Gagnant / 4 pts Perdant)</option>
+                                        <option value={11}>Niveau Argent (5 pts Gagnant / 2 pts Perdant)</option>
+                                        <option value={12}>Niveau Bronze (3 pts Gagnant / 1 pt Perdant)</option>
+                                    </>
+                                ) : (
+                                    <>
+                                        <option value={0}>Niveau 0 (5 pts - Top 3)</option>
+                                        <option value={1}>Niveau 1 (10 pts - Top 5)</option>
+                                        <option value={2}>Niveau 2 (20 pts - Top 5)</option>
+                                        <option value={3}>Niveau 3 (50 pts - Top 5)</option>
+                                        <option value={4}>Niveau 4 (100 pts - Top 8)</option>
+                                        <option value={5}>Niveau 5 (200 pts - Top 10)</option>
+                                    </>
+                                )}
                             </select>
                         </div>
                     </div>

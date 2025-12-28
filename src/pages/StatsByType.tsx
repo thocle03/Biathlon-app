@@ -44,12 +44,32 @@ export const StatsByType = ({ type, title }: StatsByTypeProps) => {
 
     filteredEvents.forEach(event => {
         const eventRaces = allRaces.filter(r => r.eventId === event.id && r.totalTime);
-        eventRaces.sort((a, b) => (a.totalTime || 0) - (b.totalTime || 0));
+
+        // For non-relay, we sort by time to determine rank if not set
+        if (event.type !== 'relay') {
+            eventRaces.sort((a, b) => (a.totalTime || 0) - (b.totalTime || 0));
+        }
 
         const rankings = eventRaces.map((race, idx) => {
-            const rank = idx + 1;
-            const scale = POINTS_SYSTEM[event.level as keyof typeof POINTS_SYSTEM] || [];
-            const points = scale[idx] || 0;
+            let rank = idx + 1;
+            // Use explicit rank from DB if available (Critical for Relay where multiple people have rank 1)
+            if (race.rank) {
+                rank = race.rank;
+            }
+
+            let points = 0;
+            // Relay specific point logic
+            if (event.level >= 10) {
+                if (event.level === 10) points = (rank === 1) ? 10 : 4;
+                else if (event.level === 11) points = (rank === 1) ? 5 : 2;
+                else if (event.level === 12) points = (rank === 1) ? 3 : 1;
+            } else {
+                // Standard logic
+                const scale = POINTS_SYSTEM[event.level as keyof typeof POINTS_SYSTEM] || [];
+                // If using explicit rank, map rank 1 to index 0
+                points = scale[rank - 1] || 0;
+            }
+
             return { competitorId: race.competitorId, rank, points };
         });
 
@@ -120,84 +140,86 @@ export const StatsByType = ({ type, title }: StatsByTypeProps) => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column - Best Times & Shooters */}
-                    <div className="lg:col-span-1 space-y-6">
-                        {/* Best Times */}
-                        <div className="glass-panel p-6 rounded-2xl border-t-4 border-t-emerald-500">
-                            <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                                <Timer className="w-5 h-5 text-emerald-500" />
-                                Meilleurs Temps
-                            </h2>
-                            <div className="space-y-3">
-                                {currentPeriodRaces
-                                    .filter(r => r.totalTime)
-                                    .sort((a, b) => (a.totalTime || 0) - (b.totalTime || 0))
-                                    .slice(0, 5)
-                                    .map((race, idx) => {
-                                        const competitor = competitors.find(c => c.id === race.competitorId);
-                                        return (
-                                            <div key={race.id} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => navigate(`/competitors/${competitor?.id}`)}>
+                    {/* Left Column - Best Times & Shooters - HIDE FOR RELAY */}
+                    {type !== 'relay' && (
+                        <div className="lg:col-span-1 space-y-6">
+                            {/* Best Times */}
+                            <div className="glass-panel p-6 rounded-2xl border-t-4 border-t-emerald-500">
+                                <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                                    <Timer className="w-5 h-5 text-emerald-500" />
+                                    Meilleurs Temps
+                                </h2>
+                                <div className="space-y-3">
+                                    {currentPeriodRaces
+                                        .filter(r => r.totalTime)
+                                        .sort((a, b) => (a.totalTime || 0) - (b.totalTime || 0))
+                                        .slice(0, 5)
+                                        .map((race, idx) => {
+                                            const competitor = competitors.find(c => c.id === race.competitorId);
+                                            return (
+                                                <div key={race.id} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => navigate(`/competitors/${competitor?.id}`)}>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${idx === 0 ? 'bg-yellow-500/20 text-yellow-500' : idx === 1 ? 'bg-slate-400/20 text-slate-400' : idx === 2 ? 'bg-amber-700/20 text-amber-700' : 'bg-white/5 text-slate-400'}`}>
+                                                            {idx + 1}
+                                                        </div>
+                                                        <span className="font-medium">{competitor?.name}</span>
+                                                    </div>
+                                                    <span className="font-mono text-emerald-400 font-bold">
+                                                        {new Date(race.totalTime || 0).toISOString().slice(14, 21)}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    {currentPeriodRaces.filter(r => r.totalTime).length === 0 && (
+                                        <p className="text-center text-slate-500 text-sm py-4">Aucun temps enregistré</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Best Shooters */}
+                            <div className="glass-panel p-6 rounded-2xl border-t-4 border-t-blue-500">
+                                <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                                    <Target className="w-5 h-5 text-blue-500" />
+                                    Meilleurs Tireurs
+                                </h2>
+                                <div className="space-y-3">
+                                    {competitors
+                                        .map(c => {
+                                            const competitorRaces = currentPeriodRaces.filter(r => r.competitorId === c.id && r.totalTime);
+                                            if (competitorRaces.length === 0) return null;
+
+                                            const totalShots = competitorRaces.length * 10;
+                                            const totalErrors = competitorRaces.reduce((sum, r) => sum + (r.shooting1?.errors || 0) + (r.shooting2?.errors || 0), 0);
+                                            const accuracy = ((totalShots - totalErrors) / totalShots) * 100;
+
+                                            return { ...c, accuracy, totalShots, totalErrors };
+                                        })
+                                        .filter((c): c is NonNullable<typeof c> => c !== null && c.accuracy !== undefined)
+                                        .sort((a, b) => b.accuracy - a.accuracy)
+                                        .slice(0, 5)
+                                        .map((c, idx) => (
+                                            <div key={c.id} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => navigate(`/competitors/${c.id}`)}>
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${idx === 0 ? 'bg-yellow-500/20 text-yellow-500' : idx === 1 ? 'bg-slate-400/20 text-slate-400' : idx === 2 ? 'bg-amber-700/20 text-amber-700' : 'bg-white/5 text-slate-400'}`}>
                                                         {idx + 1}
                                                     </div>
-                                                    <span className="font-medium">{competitor?.name}</span>
+                                                    <span className="font-medium">{c.name}</span>
                                                 </div>
-                                                <span className="font-mono text-emerald-400 font-bold">
-                                                    {new Date(race.totalTime || 0).toISOString().slice(14, 21)}
+                                                <span className="font-bold text-blue-400">
+                                                    {c.accuracy.toFixed(1)}%
                                                 </span>
                                             </div>
-                                        );
-                                    })}
-                                {currentPeriodRaces.filter(r => r.totalTime).length === 0 && (
-                                    <p className="text-center text-slate-500 text-sm py-4">Aucun temps enregistré</p>
-                                )}
+                                        ))}
+                                    {competitors.filter(c => currentPeriodRaces.filter(r => r.competitorId === c.id && r.totalTime).length > 0).length === 0 && (
+                                        <p className="text-center text-slate-500 text-sm py-4">Aucune donnée de tir</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
-
-                        {/* Best Shooters */}
-                        <div className="glass-panel p-6 rounded-2xl border-t-4 border-t-blue-500">
-                            <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                                <Target className="w-5 h-5 text-blue-500" />
-                                Meilleurs Tireurs
-                            </h2>
-                            <div className="space-y-3">
-                                {competitors
-                                    .map(c => {
-                                        const competitorRaces = currentPeriodRaces.filter(r => r.competitorId === c.id && r.totalTime);
-                                        if (competitorRaces.length === 0) return null;
-
-                                        const totalShots = competitorRaces.length * 10;
-                                        const totalErrors = competitorRaces.reduce((sum, r) => sum + (r.shooting1?.errors || 0) + (r.shooting2?.errors || 0), 0);
-                                        const accuracy = ((totalShots - totalErrors) / totalShots) * 100;
-
-                                        return { ...c, accuracy, totalShots, totalErrors };
-                                    })
-                                    .filter((c): c is NonNullable<typeof c> => c !== null && c.accuracy !== undefined)
-                                    .sort((a, b) => b.accuracy - a.accuracy)
-                                    .slice(0, 5)
-                                    .map((c, idx) => (
-                                        <div key={c.id} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => navigate(`/competitors/${c.id}`)}>
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${idx === 0 ? 'bg-yellow-500/20 text-yellow-500' : idx === 1 ? 'bg-slate-400/20 text-slate-400' : idx === 2 ? 'bg-amber-700/20 text-amber-700' : 'bg-white/5 text-slate-400'}`}>
-                                                    {idx + 1}
-                                                </div>
-                                                <span className="font-medium">{c.name}</span>
-                                            </div>
-                                            <span className="font-bold text-blue-400">
-                                                {c.accuracy.toFixed(1)}%
-                                            </span>
-                                        </div>
-                                    ))}
-                                {competitors.filter(c => currentPeriodRaces.filter(r => r.competitorId === c.id && r.totalTime).length > 0).length === 0 && (
-                                    <p className="text-center text-slate-500 text-sm py-4">Aucune donnée de tir</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                    )}
 
                     {/* Right Column - Rankings */}
-                    <div className="lg:col-span-2">
+                    <div className={type === 'relay' ? "lg:col-span-3" : "lg:col-span-2"}>
                         <div className="glass-panel p-6 rounded-2xl border-t-4 border-t-yellow-500">
                             <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                                 <Star className="w-5 h-5 text-yellow-500" />

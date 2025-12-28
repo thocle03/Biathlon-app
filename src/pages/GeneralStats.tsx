@@ -41,9 +41,24 @@ export const GeneralStats = () => {
         eventRaces.sort((a, b) => (a.totalTime || 0) - (b.totalTime || 0));
 
         const rankings = eventRaces.map((race, idx) => {
-            const rank = idx + 1;
-            const scale = POINTS_SYSTEM[event.level as keyof typeof POINTS_SYSTEM] || [];
-            const points = scale[idx] || 0;
+            let rank = idx + 1;
+            // Use explicit rank from DB if available (Critical for Relay)
+            if (race.rank) {
+                rank = race.rank;
+            }
+
+            let points = 0;
+            // Relay specific point logic
+            if (event.level >= 10) {
+                if (event.level === 10) points = (rank === 1) ? 10 : 4;
+                else if (event.level === 11) points = (rank === 1) ? 5 : 2;
+                else if (event.level === 12) points = (rank === 1) ? 3 : 1;
+            } else {
+                // Standard logic
+                const scale = POINTS_SYSTEM[event.level as keyof typeof POINTS_SYSTEM] || [];
+                points = scale[rank - 1] || 0;
+            }
+
             return { competitorId: race.competitorId, rank, points };
         });
 
