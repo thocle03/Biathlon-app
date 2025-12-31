@@ -180,3 +180,5 @@ Colonnes :
 - Gestion des équipes pour les relais
 - Calcul automatique des offsets de poursuite depuis un Sprint précédent
 - Interface mobile optimisée pour le chronométrage sur le terrain
+
+fais par thomas
