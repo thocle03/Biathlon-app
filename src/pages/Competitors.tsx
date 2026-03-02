@@ -59,7 +59,7 @@ export const Competitors = () => {
             podiums,
             bestPosition: bestPosition === 999 ? undefined : bestPosition
         };
-    });
+    }).sort((a, b) => b.totalRaces - a.totalRaces);
 
     return (
         <div className="space-y-6">

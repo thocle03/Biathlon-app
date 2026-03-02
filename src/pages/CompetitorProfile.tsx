@@ -268,7 +268,7 @@ export const CompetitorProfile = () => {
                                     const event = allEvents?.find(e => e.id === race.eventId);
                                     const errors = (race.shooting1?.errors || 0) + (race.shooting2?.errors || 0);
                                     return (
-                                        <tr key={race.id} className="hover:bg-white/5 transition-colors">
+                                        <tr key={race.id} className="hover:bg-white/5 transition-colors cursor-pointer" onClick={() => navigate(`/competitors/${compId}/analysis/${race.id}`)}>
                                             <td className="p-4 text-slate-400">{event ? new Date(event.date).toLocaleDateString() : '-'}</td>
                                             <td className="p-4 font-medium text-white">{event?.name || 'Inconnu'}</td>
                                             <td className="p-4 text-center">
