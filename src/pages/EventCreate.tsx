@@ -136,6 +136,10 @@ export const EventCreate = () => {
                         splits: {},
                         shooting1: { errors: 0 },
                         shooting2: { errors: 0 },
+                        ...(type === 'individual' ? {
+                            shooting3: { errors: 0 },
+                            shooting4: { errors: 0 },
+                        } : {}),
                         penaltyCount: 0,
                     };
 
@@ -150,6 +154,10 @@ export const EventCreate = () => {
                             splits: {},
                             shooting1: { errors: 0 },
                             shooting2: { errors: 0 },
+                            ...(type === 'individual' ? {
+                                shooting3: { errors: 0 },
+                                shooting4: { errors: 0 },
+                            } : {}),
                             penaltyCount: 0,
                         };
                         promises.push(db.races.add(race2));

@@ -67,6 +67,10 @@ export const EventDashboard = () => {
             splits: {},
             shooting1: { errors: 0 },
             shooting2: { errors: 0 },
+            ...(event.type === 'individual' ? {
+                shooting3: { errors: 0 },
+                shooting4: { errors: 0 },
+            } : {}),
             penaltyCount: 0,
         };
 
@@ -79,6 +83,10 @@ export const EventDashboard = () => {
                 splits: {},
                 shooting1: { errors: 0 },
                 shooting2: { errors: 0 },
+                ...(event.type === 'individual' ? {
+                    shooting3: { errors: 0 },
+                    shooting4: { errors: 0 },
+                } : {}),
                 penaltyCount: 0,
             };
             await db.transaction('rw', db.races, async () => {
@@ -298,7 +306,7 @@ export const EventDashboard = () => {
                                     {!isMassStart && (
                                         <div className="flex flex-col gap-2">
                                             <button
-                                                onClick={() => navigate(`/race/${duel.race1.id}`)}
+                                                onClick={() => navigate(event.type === 'individual' ? `/race-individual/${duel.race1.id}` : `/race/${duel.race1.id}`)}
                                                 className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium shadow-lg shadow-blue-900/20 transition-all hover:scale-105"
                                             >
                                                 <Play className="w-4 h-4 fill-current" />
@@ -393,7 +401,7 @@ export const EventDashboard = () => {
                                                         {new Date(race.totalTime || 0).toISOString().slice(14, 21)}
                                                     </div>
                                                     <div className="text-xs text-slate-500 flex gap-1 justify-end">
-                                                        <span>{(race.shooting1?.errors || 0) + (race.shooting2?.errors || 0)} fautes</span>
+                                                        <span>{(race.shooting1?.errors || 0) + (race.shooting2?.errors || 0) + (race.shooting3?.errors || 0) + (race.shooting4?.errors || 0)} fautes</span>
                                                     </div>
                                                 </div>
                                             </div>

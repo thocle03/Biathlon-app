@@ -14,6 +14,7 @@ import { EventCreate } from './pages/EventCreate';
 import { EventDashboard } from './pages/EventDashboard';
 import { Race } from './pages/Race';
 import { PursuitRace } from './pages/PursuitRace';
+import { IndividualRace } from './pages/IndividualRace';
 import { RelayRace } from './pages/RelayRace';
 import { ManualRaceEntry } from './pages/ManualRaceEntry';
 import { Stats } from './pages/Stats';
@@ -59,6 +60,7 @@ function App() {
             <Route path="events/new/:type" element={<EventCreate />} />
             <Route path="events/:id" element={<EventDashboard />} />
             <Route path="race/:id" element={<Race />} />
+            <Route path="race-individual/:id" element={<IndividualRace />} />
             <Route path="race-mass/:id" element={<PursuitRace />} />
             <Route path="race-relay/:id" element={<RelayRace />} />
             <Route path="race/manual/:id" element={<ManualRaceEntry />} />

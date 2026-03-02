@@ -30,8 +30,6 @@ export const CompetitorProfile = () => {
     const filteredRaces = competitorsRaces.filter(race => {
         const event = allEvents.find(e => e.id === race.eventId);
         if (!event) return false;
-        // Only include sprint events
-        if (event.type && event.type !== 'sprint') return false;
         if (selectedYear === 'all') return true;
         return new Date(event.date).getFullYear() === selectedYear;
     });
@@ -49,6 +47,9 @@ export const CompetitorProfile = () => {
     let bestSkiTime = Infinity;
 
     filteredRaces.forEach(race => {
+        const event = allEvents.find(e => e.id === race.eventId);
+        if (!event) return;
+
         // Podiums Logic: Compare with all other racers in the same event
         const eventRaces = allRacesInDb.filter(r => r.eventId === race.eventId && r.totalTime);
         eventRaces.sort((a, b) => (a.totalTime || 0) - (b.totalTime || 0));
@@ -57,19 +58,31 @@ export const CompetitorProfile = () => {
         if (rank > 0 && rank <= 3) podiums++;
 
         // Shooting Stats
-        if (race.shooting1) { proneShots += 5; proneHits += (5 - race.shooting1.errors); }
-        if (race.shooting2) { standShots += 5; standHits += (5 - race.shooting2.errors); }
+        const type = event.type || 'sprint';
+        if (type === 'individual') {
+            if (race.shooting1) { proneShots += 5; proneHits += (5 - race.shooting1.errors); }
+            if (race.shooting2) { proneShots += 5; proneHits += (5 - race.shooting2.errors); }
+            if (race.shooting3) { standShots += 5; standHits += (5 - race.shooting3.errors); }
+            if (race.shooting4) { standShots += 5; standHits += (5 - race.shooting4.errors); }
+        } else {
+            if (race.shooting1) { proneShots += 5; proneHits += (5 - race.shooting1.errors); }
+            if (race.shooting2) { standShots += 5; standHits += (5 - race.shooting2.errors); }
+        }
 
         // Best Total Time
         if (race.totalTime && race.totalTime < bestTime) bestTime = race.totalTime;
 
-        // Best Ski Time (Total - Shooting Time on range)
-        // Note: This matches logic in EventDashboard
-        if (race.splits.shoot1 && race.splits.lap1 && race.splits.shoot2 && race.splits.lap2 && race.totalTime) {
-            const shoot1Duration = race.splits.shoot1 - race.splits.lap1;
-            const shoot2Duration = race.splits.shoot2 - race.splits.lap2;
-            const ski = race.totalTime - shoot1Duration - shoot2Duration;
-            if (ski < bestSkiTime) bestSkiTime = ski;
+        // Best Ski Time
+        const s = race.splits;
+        if (s.start && s.finish) {
+            let shootTime = 0;
+            if (s.shoot1 && s.lap1) shootTime += (s.shoot1 - s.lap1);
+            if (s.shoot2 && s.lap2) shootTime += (s.shoot2 - s.lap2);
+            if (s.shoot3 && s.lap3) shootTime += (s.shoot3 - s.lap3);
+            if (s.shoot4 && s.lap4) shootTime += (s.shoot4 - s.lap4);
+
+            const ski = (race.totalTime || 0) - shootTime;
+            if (ski > 0 && ski < bestSkiTime) bestSkiTime = ski;
         }
     });
 
@@ -261,10 +274,13 @@ export const CompetitorProfile = () => {
                                             <td className="p-4 text-center">
                                                 <div className="flex flex-col items-center text-xs">
                                                     <span className={errors === 0 ? "text-emerald-400 font-bold" : "text-slate-300"}>
-                                                        {10 - errors}/10
+                                                        {event?.type === 'individual' ? (20 - errors) + '/20' : (10 - errors) + '/10'}
                                                     </span>
                                                     <span className="text-slate-600 scale-75">
-                                                        C: {5 - (race.shooting1?.errors || 0)} | D: {5 - (race.shooting2?.errors || 0)}
+                                                        {event?.type === 'individual'
+                                                            ? `C: ${10 - ((race.shooting1?.errors || 0) + (race.shooting2?.errors || 0))} | D: ${10 - ((race.shooting3?.errors || 0) + (race.shooting4?.errors || 0))}`
+                                                            : `C: ${5 - (race.shooting1?.errors || 0)} | D: ${5 - (race.shooting2?.errors || 0)}`
+                                                        }
                                                     </span>
                                                 </div>
                                             </td>
@@ -289,9 +305,14 @@ const SkiAnalysisView = ({ races, allEvents, navigate }: { races: any[], allEven
     // Calculate Ski Times
     const data = races.map(race => {
         if (!race.splits.shoot1 || !race.splits.lap1 || !race.splits.shoot2 || !race.splits.lap2 || !race.totalTime) return null;
-        const shoot1Duration = race.splits.shoot1 - race.splits.lap1;
-        const shoot2Duration = race.splits.shoot2 - race.splits.lap2;
-        const skiTime = race.totalTime - shoot1Duration - shoot2Duration;
+        const s = race.splits;
+        let shootTime = 0;
+        if (s.shoot1 && s.lap1) shootTime += (s.shoot1 - s.lap1);
+        if (s.shoot2 && s.lap2) shootTime += (s.shoot2 - s.lap2);
+        if (s.shoot3 && s.lap3) shootTime += (s.shoot3 - s.lap3);
+        if (s.shoot4 && s.lap4) shootTime += (s.shoot4 - s.lap4);
+
+        const skiTime = (race.totalTime || 0) - shootTime;
         const event = allEvents.find(e => e.id === race.eventId);
         return { ...race, skiTime, eventName: event?.name, eventDate: event?.date };
     }).filter(d => d !== null).sort((a, b) => a!.skiTime - b!.skiTime);

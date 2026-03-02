@@ -29,11 +29,11 @@ export const GeneralStats = () => {
     // Points system config
     const POINTS_SYSTEM = {
         0: [5, 3, 1], // Level 0 - Only top 3
-        1: [10, 6, 4, 2, 1], // Level 1
-        2: [20, 12, 8, 4, 2], // Level 2
-        3: [50, 30, 20, 10, 5], // Level 3
-        4: [100, 60, 40, 20, 10, 8, 6, 4], // Level 4 - Top 8
-        5: [200, 120, 80, 40, 20, 16, 12, 8, 6, 4] // Level 5 - Top 10
+        1: [10, 7, 5, 3, 1], // Level 1
+        2: [20, 14, 10, 6, 3], // Level 2
+        3: [50, 35, 25, 15, 10], // Level 3
+        4: [100, 80, 60, 40, 20, 16, 12, 8], // Level 4 - Top 8
+        5: [200, 140, 100, 60, 40, 30, 20, 10, 5, 2] // Level 5 - Top 10
     };
 
     filteredEvents.forEach(event => {
@@ -57,6 +57,10 @@ export const GeneralStats = () => {
                 // Standard logic
                 const scale = POINTS_SYSTEM[event.level as keyof typeof POINTS_SYSTEM] || [];
                 points = scale[rank - 1] || 0;
+            }
+
+            if (event.type === 'individual') {
+                points = Math.ceil(points * 1.5);
             }
 
             return { competitorId: race.competitorId, rank, points };
